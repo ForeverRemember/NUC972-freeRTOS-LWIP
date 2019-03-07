@@ -5528,15 +5528,6 @@ struct pbuf {
 
 
  
-
-
-
-
-extern volatile u8_t pbuf_free_ooseq_pending;
-void pbuf_free_ooseq();
-
-
- 
 #line 151 ".\\lwip-1.4.1\\src\\include\\lwip/pbuf.h"
 
  
@@ -6215,7 +6206,12 @@ MEMP_REASSDATA,
 
 
 
-#line 65 ".\\lwip-1.4.1\\src\\include\\lwip/memp_std.h"
+
+MEMP_TCPIP_MSG_API,
+
+MEMP_TCPIP_MSG_INPKT,
+
+
 
 
 

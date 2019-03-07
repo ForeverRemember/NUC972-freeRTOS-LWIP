@@ -350,10 +350,10 @@
           </ArmAdsMisc>
           <Cads>
             <interw>1</interw>
-            <Optim>3</Optim>
+            <Optim>1</Optim>
             <oTime>0</oTime>
             <SplitLS>0</SplitLS>
-            <OneElfS>0</OneElfS>
+            <OneElfS>1</OneElfS>
             <Strict>0</Strict>
             <EnumInt>0</EnumInt>
             <PlainCh>0</PlainCh>
@@ -375,7 +375,7 @@
               <MiscControls>--diag_suppress=1295,177,550</MiscControls>
               <Define></Define>
               <Undefine></Undefine>
-              <IncludePath>.\Driver\Include;.\lwip-1.4.1\include;.\lwip-1.4.1\src\include\ipv4;.\lwip-1.4.1\src\include\</IncludePath>
+              <IncludePath>.\Driver\Include;.\lwip-1.4.1\include;.\lwip-1.4.1\src\include\ipv4;.\lwip-1.4.1\src\include\;.\FreeRTOS\Source\include;.\FreeRTOS\Source\portable\MemMang;.\FreeRTOS\Source\portable\RVDS\ARM9_NUC970</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -578,6 +578,61 @@
               <FileName>sys_arch.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\lwip-1.4.1\sys_arch.c</FilePath>
+            </File>
+            <File>
+              <FileName>tcpip.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\lwip-1.4.1\src\api\tcpip.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>FREERTOS</GroupName>
+          <Files>
+            <File>
+              <FileName>croutine.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\FreeRTOS\Source\croutine.c</FilePath>
+            </File>
+            <File>
+              <FileName>event_groups.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\FreeRTOS\Source\event_groups.c</FilePath>
+            </File>
+            <File>
+              <FileName>list.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\FreeRTOS\Source\list.c</FilePath>
+            </File>
+            <File>
+              <FileName>queue.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\FreeRTOS\Source\queue.c</FilePath>
+            </File>
+            <File>
+              <FileName>tasks.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\FreeRTOS\Source\tasks.c</FilePath>
+            </File>
+            <File>
+              <FileName>timers.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\FreeRTOS\Source\timers.c</FilePath>
+            </File>
+            <File>
+              <FileName>heap_4.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\FreeRTOS\Source\portable\MemMang\heap_4.c</FilePath>
+            </File>
+            <File>
+              <FileName>port.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\FreeRTOS\Source\portable\RVDS\ARM9_NUC970\port.c</FilePath>
+            </File>
+            <File>
+              <FileName>portASM.s</FileName>
+              <FileType>2</FileType>
+              <FilePath>.\FreeRTOS\Source\portable\RVDS\ARM9_NUC970\portASM.s</FilePath>
             </File>
           </Files>
         </Group>

@@ -197,7 +197,7 @@ static void net_init(void)
 }
 
 
-
+static void test_task( void *pvParameters );
 int main(void)
 {
     sysDisableCache();
@@ -205,10 +205,25 @@ int main(void)
     sysEnableCache(CACHE_WRITE_BACK);
     sysInitializeUART();
     
-    net_init();
-    httpd_init();
+    xTaskCreate( test_task, "test_task", 512, NULL, 10, NULL );
 
+		//ÏµÍ³Æô¶¯
+    vTaskStartScheduler();
+//    net_init();
+//    httpd_init();
+    while(1);
+//    while (1)
+//        sys_check_timeouts();  // All network traffic is handled in interrupt handler
+}
+
+static void test_task( void *pvParameters )
+{
+//    net_init();
+//    httpd_init();
     while (1)
-        sys_check_timeouts();  // All network traffic is handled in interrupt handler
+    {
+        vTaskDelay( 100/portTICK_PERIOD_MS );
+        sysprintf("over\n");
+    }
 }
 

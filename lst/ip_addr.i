@@ -5523,15 +5523,6 @@ struct pbuf {
 
 
  
-
-
-
-
-extern volatile u8_t pbuf_free_ooseq_pending;
-void pbuf_free_ooseq();
-
-
- 
 #line 151 ".\\lwip-1.4.1\\src\\include\\lwip/pbuf.h"
 
  
