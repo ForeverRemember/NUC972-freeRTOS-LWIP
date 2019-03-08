@@ -56,17 +56,21 @@
 #include "netif/nuc970_eth.h"
 #include "string.h"
 
+#include "FreeRtos.h"
+#include "task.h"
+#include "semphr.h"
 /* Define those to better describe your network interface. */
 #define IFNAME  'e'
 #define IFNAME0 '0'
 #define IFNAME1 '1'
-
+xSemaphoreHandle s_xSemaphore = NULL;
+xSemaphoreHandle xTxSemaphore = NULL;
 
 struct netif *_netif0;
 struct netif *_netif1;
-/*__weak*/ extern u8_t my_mac_addr0[6];
-/*__weak*/ extern u8_t my_mac_addr1[6];
-
+unsigned char my_mac_addr0[6] = {0x00, 0x00, 0x00, 0x55, 0x66, 0x77};
+unsigned char my_mac_addr1[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x01};
+void ethernetif_input_new( void * pvParameters );
 /**
  * Helper struct to hold private data used to operate your ethernet interface.
  * Keeping the ethernet address of the MAC in this struct is not necessary
@@ -118,7 +122,21 @@ low_level_init0(struct netif *netif)
 #ifdef LWIP_IGMP
     netif->flags |= NETIF_FLAG_IGMP;
 #endif
-
+    
+  /* create binary semaphore used for informing ethernetif of frame reception */
+  if (s_xSemaphore == NULL)
+  {
+    vSemaphoreCreateBinary(s_xSemaphore);
+    xSemaphoreTake( s_xSemaphore, 0);
+  }
+  if (xTxSemaphore == NULL)
+  {
+    vSemaphoreCreateBinary(xTxSemaphore);
+    xSemaphoreGive( xTxSemaphore);
+  }
+  
+  xTaskCreate(ethernetif_input_new, "Eth_if", 512, NULL,
+              configMAX_PRIORITIES - 2,NULL);
     ETH0_init(netif->hwaddr);
 }
 
@@ -189,28 +207,33 @@ low_level_output0(struct netif *netif, struct pbuf *p)
     u8_t *buf = NULL;
     u16_t len = 0;
 
+    if (xSemaphoreTake(xTxSemaphore, 250))
+    {
+        buf = ETH0_get_tx_buf();
+        if(buf == NULL)
+        {
+            xSemaphoreGive(xTxSemaphore);
+            return ERR_MEM;
+        }
+    #if ETH_PAD_SIZE
+        pbuf_header(p, -ETH_PAD_SIZE); /* drop the padding word */
+    #endif
 
-    buf = ETH0_get_tx_buf();
-    if(buf == NULL)
-        return ERR_MEM;
-#if ETH_PAD_SIZE
-    pbuf_header(p, -ETH_PAD_SIZE); /* drop the padding word */
-#endif
+        for(q = p; q != NULL; q = q->next) {
+            memcpy((u8_t*)&buf[len], q->payload, q->len);
+            len = len + q->len;
+        }
 
-    for(q = p; q != NULL; q = q->next) {
-        memcpy((u8_t*)&buf[len], q->payload, q->len);
-        len = len + q->len;
+        ETH0_trigger_tx(len, NULL);
+
+
+    #if ETH_PAD_SIZE
+        pbuf_header(p, ETH_PAD_SIZE); /* reclaim the padding word */
+    #endif
+
+        LINK_STATS_INC(link.xmit);
+        xSemaphoreGive(xTxSemaphore);
     }
-
-    ETH0_trigger_tx(len, NULL);
-
-
-#if ETH_PAD_SIZE
-    pbuf_header(p, ETH_PAD_SIZE); /* reclaim the padding word */
-#endif
-
-    LINK_STATS_INC(link.xmit);
-
     return ERR_OK;
 }
 
@@ -230,37 +253,37 @@ low_level_output0(struct netif *netif, struct pbuf *p)
  *       dropped because of memory failure (except for the TCP timers).
  */
 
-static err_t
-low_level_output1(struct netif *netif, struct pbuf *p)
-{
-    struct pbuf *q;
-    u8_t *buf = NULL;
-    u16_t len = 0;
+//static err_t
+//low_level_output1(struct netif *netif, struct pbuf *p)
+//{
+//    struct pbuf *q;
+//    u8_t *buf = NULL;
+//    u16_t len = 0;
 
 
-//    buf = ETH1_get_tx_buf();
-    if(buf == NULL)
-        return ERR_MEM;
-#if ETH_PAD_SIZE
-    pbuf_header(p, -ETH_PAD_SIZE); /* drop the padding word */
-#endif
+////    buf = ETH1_get_tx_buf();
+//    if(buf == NULL)
+//        return ERR_MEM;
+//#if ETH_PAD_SIZE
+//    pbuf_header(p, -ETH_PAD_SIZE); /* drop the padding word */
+//#endif
 
-    for(q = p; q != NULL; q = q->next) {
-        memcpy((u8_t*)&buf[len], q->payload, q->len);
-        len = len + q->len;
-    }
+//    for(q = p; q != NULL; q = q->next) {
+//        memcpy((u8_t*)&buf[len], q->payload, q->len);
+//        len = len + q->len;
+//    }
 
-    ETH1_trigger_tx(len, NULL);
+//    ETH1_trigger_tx(len, NULL);
 
 
-#if ETH_PAD_SIZE
-    pbuf_header(p, ETH_PAD_SIZE); /* reclaim the padding word */
-#endif
+//#if ETH_PAD_SIZE
+//    pbuf_header(p, ETH_PAD_SIZE); /* reclaim the padding word */
+//#endif
 
-    LINK_STATS_INC(link.xmit);
+//    LINK_STATS_INC(link.xmit);
 
-    return ERR_OK;
-}
+//    return ERR_OK;
+//}
 
 /**
  * Should allocate a pbuf and transfer the bytes of the incoming
@@ -273,12 +296,12 @@ low_level_output1(struct netif *netif, struct pbuf *p)
 static struct pbuf *
 low_level_input(struct netif *netif, u16_t len, u8_t *buf)
 {
-    struct pbuf *p, *q;
+    struct pbuf *p=NULL, *q;
 
 #if ETH_PAD_SIZE
     len += ETH_PAD_SIZE; /* allow room for Ethernet padding */
 #endif
-
+    
     /* We allocate a pbuf chain of pbufs from the pool. */
     p = pbuf_alloc(PBUF_RAW, len, PBUF_POOL);
 
@@ -321,6 +344,12 @@ low_level_input(struct netif *netif, u16_t len, u8_t *buf)
  *
  * @param netif the lwip network interface structure for this ethernetif
  */
+
+extern volatile u16_t g_nET0RxLen;
+extern volatile u8_t *g_cET0RxBuf;
+
+extern struct eth_descriptor volatile *cur_tx_desc_ptr, *cur_rx_desc_ptr, *fin_tx_desc_ptr;
+
 void
 ethernetif_input0(u16_t len, u8_t *buf)
 {
@@ -358,6 +387,57 @@ ethernetif_input0(u16_t len, u8_t *buf)
         pbuf_free(p);
         p = NULL;
         break;
+    }
+}
+
+
+#define ETH0_TRIGGER_RX()    outpw(REG_EMAC0_RSDR, 0)
+extern struct eth_descriptor volatile *cur_rx_desc_ptr;
+void
+//ethernetif_input0(u16_t len, u8_t *buf)
+ethernetif_input_new( void * pvParameters )
+{
+    struct eth_hdr *ethhdr;
+    struct pbuf *p = NULL;
+    u16_t len;
+    u8_t *buf;
+    int ret;
+    unsigned int status;
+    
+    while (1)
+    {
+        if (xSemaphoreTake( s_xSemaphore, 100)==pdTRUE)
+        {
+            #if 1
+            do {
+			
+                status = cur_rx_desc_ptr->status1;
+                    
+                if(status & OWNERSHIP_EMAC)
+                    break;
+
+                if (status & RXFD_RXGD)
+                {
+                    len = status & 0xFFFF;
+                    ethernetif_input0(len, cur_rx_desc_ptr->buf);
+//                    p = low_level_input(NULL, len, cur_rx_desc_ptr->buf);
+//                    sysprintf("r%d\n", len);
+//                    if (p != NULL)
+//                    {
+//                        ret = _netif0->input( p, _netif0);
+//                        if (ERR_OK != ret)
+//                        {
+//                            pbuf_free(p);
+//                        }
+//                    }
+                }
+                cur_rx_desc_ptr->status1 = OWNERSHIP_EMAC;
+                cur_rx_desc_ptr = cur_rx_desc_ptr->next;
+
+            } while (1);
+            ETH0_TRIGGER_RX();
+            #endif
+        }
     }
 }
 
@@ -480,46 +560,46 @@ ethernetif_init0(struct netif *netif)
  *         ERR_MEM if private data couldn't be allocated
  *         any other err_t on error
  */
-err_t
-ethernetif_init1(struct netif *netif)
-{
-    struct ethernetif *ethernetif;
+//err_t
+//ethernetif_init1(struct netif *netif)
+//{
+//    struct ethernetif *ethernetif;
 
-    LWIP_ASSERT("netif != NULL", (netif != NULL));
+//    LWIP_ASSERT("netif != NULL", (netif != NULL));
 
-    _netif1 = netif;
-    ethernetif = mem_malloc(sizeof(struct ethernetif));
-    if (ethernetif == NULL) {
-        LWIP_DEBUGF(NETIF_DEBUG, ("ethernetif_init: out of memory\n"));
-        return ERR_MEM;
-    }
+//    _netif1 = netif;
+//    ethernetif = mem_malloc(sizeof(struct ethernetif));
+//    if (ethernetif == NULL) {
+//        LWIP_DEBUGF(NETIF_DEBUG, ("ethernetif_init: out of memory\n"));
+//        return ERR_MEM;
+//    }
 
-#if LWIP_NETIF_HOSTNAME
-    /* Initialize interface hostname */
-    netif->hostname = "nuc970";
-#endif /* LWIP_NETIF_HOSTNAME */
+//#if LWIP_NETIF_HOSTNAME
+//    /* Initialize interface hostname */
+//    netif->hostname = "nuc970";
+//#endif /* LWIP_NETIF_HOSTNAME */
 
-    /*
-     * Initialize the snmp variables and counters inside the struct netif.
-     * The last argument should be replaced with your link speed, in units
-     * of bits per second.
-     */
-    NETIF_INIT_SNMP(netif, snmp_ifType_ethernet_csmacd, LINK_SPEED_OF_YOUR_NETIF_IN_BPS);
+//    /*
+//     * Initialize the snmp variables and counters inside the struct netif.
+//     * The last argument should be replaced with your link speed, in units
+//     * of bits per second.
+//     */
+//    NETIF_INIT_SNMP(netif, snmp_ifType_ethernet_csmacd, LINK_SPEED_OF_YOUR_NETIF_IN_BPS);
 
-    netif->state = ethernetif;
-    netif->name[0] = IFNAME;
-    netif->name[1] = IFNAME1;
-    /* We directly use etharp_output() here to save a function call.
-     * You can instead declare your own function an call etharp_output()
-     * from it if you have to do some checks before sending (e.g. if link
-     * is available...) */
-    netif->output = etharp_output;
-    netif->linkoutput = low_level_output1;
+//    netif->state = ethernetif;
+//    netif->name[0] = IFNAME;
+//    netif->name[1] = IFNAME1;
+//    /* We directly use etharp_output() here to save a function call.
+//     * You can instead declare your own function an call etharp_output()
+//     * from it if you have to do some checks before sending (e.g. if link
+//     * is available...) */
+//    netif->output = etharp_output;
+//    netif->linkoutput = low_level_output1;
 
-    ethernetif->ethaddr = (struct eth_addr *)&(netif->hwaddr[0]);
+//    ethernetif->ethaddr = (struct eth_addr *)&(netif->hwaddr[0]);
 
-    /* initialize the hardware */
-    low_level_init1(netif);
+//    /* initialize the hardware */
+//    low_level_init1(netif);
 
-    return ERR_OK;
-}
+//    return ERR_OK;
+//}

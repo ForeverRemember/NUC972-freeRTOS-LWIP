@@ -1,9 +1,10 @@
-;/***************************************************************************
-; *                                                                         *
-; * Copyright (c) 2015 Nuvoton Technology. All rights reserved.             *
-; *                                                                         *
-; ***************************************************************************/
 
+	;/***************************************************************************
+    ; *                                                                         *
+    ; * Copyright (c) 2015 Nuvoton Technology. All rights reserved.             *
+    ; *                                                                         *
+    ; ***************************************************************************/
+    ;
 
     AREA NUC_INIT, CODE, READONLY
 
@@ -37,6 +38,7 @@ REG_AIC_MDCR    EQU     0xB8002138  ; Mask disable command register
 REG_AIC_MDCRH   EQU     0xB800213C  ; Mask disable command register (High)
 
     ENTRY
+    IMPORT  vPortYieldProcessor
     EXPORT  Reset_Go
 
         EXPORT  Vector_Table
@@ -53,7 +55,7 @@ Vector_Table
 
 Reset_Addr      DCD     Reset_Go
 Undefined_Addr  DCD     Undefined_Handler
-SWI_Addr        DCD     SWI_Handler1
+SWI_Addr        DCD     vPortYieldProcessor
 Prefetch_Addr   DCD     Prefetch_Handler
 Abort_Addr      DCD     Abort_Handler
                 DCD     0

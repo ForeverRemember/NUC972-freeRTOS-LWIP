@@ -15365,37 +15365,37 @@ low_level_output0(struct netif *netif, struct pbuf *p)
 
  
 
-static err_t
-low_level_output1(struct netif *netif, struct pbuf *p)
-{
-    struct pbuf *q;
-    u8_t *buf = 0;
-    u16_t len = 0;
-
-
-
-    if(buf == 0)
-        return -1;
-
-
-
-
-    for(q = p; q != 0; q = q->next) {
-        memcpy((u8_t*)&buf[len], q->payload, q->len);
-        len = len + q->len;
-    }
-
-    ETH1_trigger_tx(len, 0);
 
 
 
 
 
 
-    ;
 
-    return 0;
-}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -15615,46 +15615,46 @@ ethernetif_init0(struct netif *netif)
 
 
  
-err_t
-ethernetif_init1(struct netif *netif)
-{
-    struct ethernetif *ethernetif;
-
-    do { if(!((netif != 0))) do { sysprintf("Assertion \"%s\" failed at line %d in %s\n", "netif != NULL", 488, "lwip-1.4.1\\netif\\ethernetif.c"); } while(0); } while(0);
-
-    _netif1 = netif;
-    ethernetif = mem_malloc(sizeof(struct ethernetif));
-    if (ethernetif == 0) {
-        ;
-        return -1;
-    }
 
 
 
 
 
 
-    
 
 
 
- 
-    ;
-
-    netif->state = ethernetif;
-    netif->name[0] = 'e';
-    netif->name[1] = '1';
-    
 
 
- 
-    netif->output = etharp_output;
-    netif->linkoutput = low_level_output1;
 
-    ethernetif->ethaddr = (struct eth_addr *)&(netif->hwaddr[0]);
 
-     
-    low_level_init1(netif);
 
-    return 0;
-}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

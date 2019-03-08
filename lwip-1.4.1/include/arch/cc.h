@@ -106,5 +106,7 @@ typedef u32_t sys_prot_t;
 #define LWIP_PROVIDE_ERRNO  1
 u32_t _LWIP_RAND(void);
 
-#define TCP_MSS                         1000
+//#define TCP_MSS                         1000
+
+
 #endif /* __CC_H__ */

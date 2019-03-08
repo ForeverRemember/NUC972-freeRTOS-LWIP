@@ -27,6 +27,7 @@
 #include "lwip/opt.h"
 #include "lwip/def.h"
 
+
 #define ETH0_TRIGGER_RX()    outpw(REG_EMAC0_RSDR, 0)
 #define ETH0_TRIGGER_TX()    outpw(REG_EMAC0_TSDR, 0)
 #define ETH0_ENABLE_TX()     outpw(REG_EMAC0_MCMDR, inpw(REG_EMAC0_MCMDR) | 0x100)
@@ -42,7 +43,7 @@ static struct eth_descriptor tx_desc[TX_DESCRIPTOR_NUM];
 static struct eth_descriptor rx_desc[RX_DESCRIPTOR_NUM] __attribute__ ((aligned(4)));
 static struct eth_descriptor tx_desc[TX_DESCRIPTOR_NUM] __attribute__ ((aligned(4)));
 #endif
-static struct eth_descriptor volatile *cur_tx_desc_ptr, *cur_rx_desc_ptr, *fin_tx_desc_ptr;
+struct eth_descriptor volatile *cur_tx_desc_ptr, *cur_rx_desc_ptr, *fin_tx_desc_ptr;
 
 static u8_t rx_buf[RX_DESCRIPTOR_NUM][PACKET_BUFFER_SIZE];
 static u8_t tx_buf[TX_DESCRIPTOR_NUM][PACKET_BUFFER_SIZE];
@@ -191,35 +192,41 @@ void ETH0_halt(void)
     outpw(REG_EMAC0_MCMDR, inpw(REG_EMAC0_MCMDR) & ~0x101); // disable tx/rx on
     
 }
-
+#include "FreeRtos.h"
+#include "task.h"
+#include "semphr.h"
+extern xSemaphoreHandle s_xSemaphore;
 void ETH0_RX_IRQHandler(void)
 {
     unsigned int status;
-
+    BaseType_t xtast_woken;
+    
     status = inpw(REG_EMAC0_MISTA) & 0xFFFF;
     outpw(REG_EMAC0_MISTA, status);
     
     if (status & 0x800) {
         // Shouldn't goes here, unless descriptor corrupted
     }
+xSemaphoreGiveFromISR(s_xSemaphore, &xtast_woken);
+//    do {
+//        status = cur_rx_desc_ptr->status1;
 
-    do {
-			
-        status = cur_rx_desc_ptr->status1;
-			
-        if(status & OWNERSHIP_EMAC)
-            break;
+//        if(status & OWNERSHIP_EMAC)
+//            break;
 
-        if (status & RXFD_RXGD) {
-            ethernetif_input0(status & 0xFFFF, cur_rx_desc_ptr->buf);
-        }
+//        if (status & RXFD_RXGD) {
 
-        cur_rx_desc_ptr->status1 = OWNERSHIP_EMAC;
-        cur_rx_desc_ptr = cur_rx_desc_ptr->next;
+//            ethernetif_input0(status & 0xFFFF, cur_rx_desc_ptr->buf);
 
-    } while (1);
 
-    ETH0_TRIGGER_RX();
+//        }
+
+//        cur_rx_desc_ptr->status1 = OWNERSHIP_EMAC;
+//        cur_rx_desc_ptr = cur_rx_desc_ptr->next;
+
+//    } while (1);
+
+//    ETH0_TRIGGER_RX();
 
 }
 
@@ -291,7 +298,7 @@ void ETH0_init(u8_t *mac_addr)
     sysEnableInterrupt(EMC0_RX_IRQn);
     ETH0_TRIGGER_RX();
     
-    sysSetTimerEvent(TIMER0, 200, (PVOID)chk_link);  // check link status every 2 sec
+//    sysSetTimerEvent(TIMER0, 200, (PVOID)chk_link);  // check link status every 2 sec
 }
 
 

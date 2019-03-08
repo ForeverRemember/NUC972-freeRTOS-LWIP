@@ -383,7 +383,7 @@
 /**
  * LWIP_NETCONN==1: Enable Netconn API (require to use api_lib.c)
  */
-#define LWIP_NETCONN                    0
+#define LWIP_NETCONN                    1
 
 /*
    ------------------------------------
@@ -393,7 +393,7 @@
 /**
  * LWIP_SOCKET==1: Enable Socket API (require to use sockets.c)
  */
-#define LWIP_SOCKET                     0
+#define LWIP_SOCKET                     1
 
 /*
    ----------------------------------------
@@ -420,4 +420,11 @@
 #define LWIP_TIMEVAL_PRIVATE    1
 #define LWIP_DEBUG  1
 
+#define TCPIP_THREAD_STACKSIZE          256
+#define TCPIP_MBOX_SIZE                 5
+#define DEFAULT_UDP_RECVMBOX_SIZE       512
+#define DEFAULT_TCP_RECVMBOX_SIZE       256
+#define DEFAULT_ACCEPTMBOX_SIZE         128
+#define DEFAULT_THREAD_STACKSIZE        256
+#define TCPIP_THREAD_PRIO               (configMAX_PRIORITIES - 2)
 #endif /* __LWIPOPTS_H__ */

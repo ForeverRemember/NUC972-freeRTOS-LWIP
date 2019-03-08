@@ -130,7 +130,7 @@ struct eth_descriptor {
 extern void ETH0_init(u8_t *mac_addr);
 extern u8_t *ETH0_get_tx_buf(void);
 extern void ETH0_trigger_tx(u16_t length, struct pbuf *p);
-extern void ethernetif_input0(u16_t len, u8_t *buf);
+//extern void ethernetif_input0(void *pvParameters);
 extern void ETH1_init(u8_t *mac_addr);
 extern u8_t *ETH1_get_tx_buf(void);
 extern void ETH1_trigger_tx(u16_t length, struct pbuf *p);

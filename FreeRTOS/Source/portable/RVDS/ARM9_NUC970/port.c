@@ -289,11 +289,11 @@ uint32_t ulCompareMatch;
 	scheduler is being used. */
 	#if configUSE_PREEMPTION == 1
 	{	
-		sysInstallISR(IRQ_LEVEL_1, TMR1_IRQn, (PVOID)vPreemptiveTick);
+		sysInstallISR(IRQ_LEVEL_7, TMR1_IRQn, (PVOID)vPreemptiveTick);
 	}
 	#else
 	{
-		sysInstallISR(IRQ_LEVEL_1, TMR1_IRQn, (PVOID)vNonPreemptiveTick);
+		sysInstallISR(IRQ_LEVEL_7, TMR1_IRQn, (PVOID)vNonPreemptiveTick);
 	}
 	#endif
 	#endif

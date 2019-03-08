@@ -16243,7 +16243,256 @@ void sys_timeouts_mbox_fetch(sys_mbox_t *mbox, void **msg);
 
 
 #line 23 "main.c"
+#line 1 ".\\lwip-1.4.1\\src\\include\\lwip/tcpip.h"
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+#line 36 ".\\lwip-1.4.1\\src\\include\\lwip/tcpip.h"
+
+
+
+#line 1 ".\\lwip-1.4.1\\src\\include\\lwip/api_msg.h"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+#line 36 ".\\lwip-1.4.1\\src\\include\\lwip/api_msg.h"
+
+#line 176 ".\\lwip-1.4.1\\src\\include\\lwip/api_msg.h"
+
+#line 40 ".\\lwip-1.4.1\\src\\include\\lwip/tcpip.h"
+#line 1 ".\\lwip-1.4.1\\src\\include\\lwip/netifapi.h"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+ 
+
+
+
+#line 32 ".\\lwip-1.4.1\\src\\include\\lwip/netifapi.h"
+
+#line 107 ".\\lwip-1.4.1\\src\\include\\lwip/netifapi.h"
+
+#line 41 ".\\lwip-1.4.1\\src\\include\\lwip/tcpip.h"
+#line 42 ".\\lwip-1.4.1\\src\\include\\lwip/tcpip.h"
+#line 1 ".\\lwip-1.4.1\\src\\include\\lwip/api.h"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+#line 36 ".\\lwip-1.4.1\\src\\include\\lwip/api.h"
+
+#line 296 ".\\lwip-1.4.1\\src\\include\\lwip/api.h"
+
+#line 43 ".\\lwip-1.4.1\\src\\include\\lwip/tcpip.h"
+#line 44 ".\\lwip-1.4.1\\src\\include\\lwip/tcpip.h"
+#line 45 ".\\lwip-1.4.1\\src\\include\\lwip/tcpip.h"
+#line 46 ".\\lwip-1.4.1\\src\\include\\lwip/tcpip.h"
+
+
+
+
+
+
+ 
+
+
+
+
+#line 74 ".\\lwip-1.4.1\\src\\include\\lwip/tcpip.h"
+
+ 
+typedef void (*tcpip_init_done_fn)(void *arg);
+ 
+typedef void (*tcpip_callback_fn)(void *ctx);
+
+ 
+struct tcpip_callback_msg;
+
+void tcpip_init(tcpip_init_done_fn tcpip_init_done, void *arg);
+
+#line 91 ".\\lwip-1.4.1\\src\\include\\lwip/tcpip.h"
+
+err_t tcpip_input(struct pbuf *p, struct netif *inp);
+
+#line 100 ".\\lwip-1.4.1\\src\\include\\lwip/tcpip.h"
+
+err_t tcpip_callback_with_block(tcpip_callback_fn function, void *ctx, u8_t block);
+
+
+struct tcpip_callback_msg* tcpip_callbackmsg_new(tcpip_callback_fn function, void *ctx);
+void   tcpip_callbackmsg_delete(struct tcpip_callback_msg* msg);
+err_t  tcpip_trycallback(struct tcpip_callback_msg* msg);
+
+ 
+err_t pbuf_free_callback(struct pbuf *p);
+err_t mem_free_callback(void *m);
+
+
+err_t tcpip_timeout(u32_t msecs, sys_timeout_handler h, void *arg);
+err_t tcpip_untimeout(sys_timeout_handler h, void *arg);
+
+
+enum tcpip_msg_type {
+
+
+
+  TCPIP_MSG_INPKT,
+
+
+
+
+  TCPIP_MSG_TIMEOUT,
+  TCPIP_MSG_UNTIMEOUT,
+
+  TCPIP_MSG_CALLBACK,
+  TCPIP_MSG_CALLBACK_STATIC
+};
+
+struct tcpip_msg {
+  enum tcpip_msg_type type;
+  sys_sem_t *sem;
+  union {
+#line 143 ".\\lwip-1.4.1\\src\\include\\lwip/tcpip.h"
+    struct {
+      struct pbuf *p;
+      struct netif *netif;
+    } inp;
+    struct {
+      tcpip_callback_fn function;
+      void *ctx;
+    } cb;
+
+    struct {
+      u32_t msecs;
+      sys_timeout_handler h;
+      void *arg;
+    } tmo;
+
+  } msg;
+};
+
+
+
+
+
+
+
+#line 24 "main.c"
 
 
  
@@ -16433,8 +16682,49 @@ int main(void)
 
 }
 
+void LwIP_Init(void)
+{
+  struct ip_addr ipaddr;
+  struct ip_addr netmask;
+  struct ip_addr gw;
+
+   
+  tcpip_init( 0, 0 );	
+
+   
+
+  ipaddr.addr = 0;
+  netmask.addr = 0;
+  gw.addr = 0;
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+ 
+  netif_add(&xnetif, &ipaddr, &netmask, &gw, 0, &ethernetif_init0, &tcpip_input);
+
+  
+  netif_set_default(&xnetif);
+
+  
+  netif_set_up(&xnetif); 
+}
 static void test_task( void *pvParameters )
 {
+    LwIP_Init();
 
 
     while (1)

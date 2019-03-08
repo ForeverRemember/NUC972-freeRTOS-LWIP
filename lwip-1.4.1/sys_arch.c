@@ -29,8 +29,28 @@
  * Author: Adam Dunkels <adam@sics.se>
  *
  */
+ 
+//#include "lwipopts.h"
 #include "nuc970.h"
 #include "sys.h"
+
+/* Determine whether we are in thread mode or handler mode. */
+int inHandlerMode (void)
+{
+    int ret;
+    __asm
+    {
+        MRS ret, CPSR
+    }
+    ret &= 0x1F;
+    if (ret == 0x1F)
+        return 0;
+    else
+        return 1;
+}
+
+#if 0
+
 #include "arch/cc.h"
 u32_t sys_now(void)
 {
@@ -38,29 +58,34 @@ u32_t sys_now(void)
     
 }
 
-//int sys_arch_protect(void)  
-//{
-//        int _old, _new;
-//        __asm
-//        {
-//            MRS    _old, CPSR
-//            ORR    _new, _old, DISABLE_FIQ_IRQ
-//            MSR    CPSR_c, _new
-//        }
-//        return(_old);
-//}
+int sys_arch_protect(void)  
+{
+        int _old, _new;
+        __asm
+        {
+            MRS    _old, CPSR
+            ORR    _new, _old, DISABLE_FIQ_IRQ
+            MSR    CPSR_c, _new
+        }
+        return(_old);
+}
 
-//void sys_arch_unprotect(int pval)
-//{
-//        __asm
-//        {
-//            MSR    CPSR_c, pval
-//        }
+void sys_arch_unprotect(int pval)
+{
+        __asm
+        {
+            MSR    CPSR_c, pval
+        }
 
-//        return; 
-//}
+        return; 
+}
+#endif
+#if 1
 
-
+#include "lwip/debug.h"
+#include "lwip/sys.h"
+#include "lwip/opt.h"
+#include "lwip/stats.h"
 /*****************************************************************************
 *
 * \file
@@ -105,10 +130,6 @@ u32_t sys_now(void)
 *
 *****************************************************************************/
 
-#include "lwip/debug.h"
-#include "lwip/sys.h"
-#include "lwip/opt.h"
-#include "lwip/stats.h"
 
 #define SYS_ARCH_BLOCKING_TICKTIMEOUT    ((portTickType)10000)
 
@@ -212,7 +233,7 @@ void sys_sem_signal(sys_sem_t *sem)
 {
 	/* Sanity check */
 	if (sem != NULL) {
-		xSemaphoreGive( *sem );
+            xSemaphoreGive( *sem );
 	}
 }
 
@@ -239,7 +260,7 @@ u32_t sys_arch_sem_wait(sys_sem_t *sem, u32_t timeout)
 	portTickType TickStop;
 	/* Express the timeout in OS tick. */
 	portTickType TickElapsed = (portTickType)(timeout / portTICK_RATE_MS);
-
+    
 	/* Sanity check */
 	if (sem != NULL) {
 		if (timeout && !TickElapsed) {
@@ -314,7 +335,7 @@ void sys_sem_set_invalid(sys_sem_t *sem)
 err_t sys_mbox_new(sys_mbox_t *mBoxNew, int size )
 {
 	err_t err_mbox = ERR_MEM;
-
+    
 	/* Sanity check */
 	if (mBoxNew != NULL) {
 		*mBoxNew = xQueueCreate( size, sizeof(void *));
@@ -477,7 +498,6 @@ u32_t sys_arch_mbox_fetch(sys_mbox_t *mbox, void **msg, u32_t timeout)
 u32_t sys_arch_mbox_tryfetch(sys_mbox_t *mbox, void **msg)
 {
 	void *tempoptr;
-
 	/* Sanity check */
 	if (mbox != NULL) {
 		if (msg == NULL) {
@@ -666,3 +686,4 @@ void sys_arch_unprotect(sys_prot_t pval)
 	vPortExitCritical();
 }
 
+#endif

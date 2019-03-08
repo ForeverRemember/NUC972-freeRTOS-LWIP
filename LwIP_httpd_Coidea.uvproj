@@ -204,15 +204,15 @@
             <AdsANot>0</AdsANot>
             <AdsLLst>1</AdsLLst>
             <AdsLmap>1</AdsLmap>
-            <AdsLcgr>0</AdsLcgr>
+            <AdsLcgr>1</AdsLcgr>
             <AdsLsym>1</AdsLsym>
             <AdsLszi>1</AdsLszi>
             <AdsLtoi>1</AdsLtoi>
-            <AdsLsun>0</AdsLsun>
-            <AdsLven>0</AdsLven>
-            <AdsLsxf>0</AdsLsxf>
+            <AdsLsun>1</AdsLsun>
+            <AdsLven>1</AdsLven>
+            <AdsLsxf>1</AdsLsxf>
             <RvctClst>1</RvctClst>
-            <GenPPlst>1</GenPPlst>
+            <GenPPlst>0</GenPPlst>
             <AdsCpuType>ARM926EJ-S</AdsCpuType>
             <RvctDeviceName></RvctDeviceName>
             <mOS>0</mOS>
@@ -361,7 +361,7 @@
             <Rwpi>0</Rwpi>
             <wLevel>0</wLevel>
             <uThumb>0</uThumb>
-            <uSurpInc>0</uSurpInc>
+            <uSurpInc>1</uSurpInc>
             <uC99>0</uC99>
             <useXO>0</useXO>
             <v6Lang>1</v6Lang>
@@ -375,7 +375,7 @@
               <MiscControls>--diag_suppress=1295,177,550</MiscControls>
               <Define></Define>
               <Undefine></Undefine>
-              <IncludePath>.\Driver\Include;.\lwip-1.4.1\include;.\lwip-1.4.1\src\include\ipv4;.\lwip-1.4.1\src\include\;.\FreeRTOS\Source\include;.\FreeRTOS\Source\portable\MemMang;.\FreeRTOS\Source\portable\RVDS\ARM9_NUC970</IncludePath>
+              <IncludePath>.\Driver\Include;.\lwip-1.4.1\include;.\lwip-1.4.1\src\include\ipv4;.\lwip-1.4.1\src\include\;.\FreeRTOS\Source\include;.\FreeRTOS\Source\portable\MemMang;.\FreeRTOS\Source\portable\RVDS\ARM9_NUC970;.\lwip-1.4.1</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -423,6 +423,11 @@
               <FileName>main.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\main.c</FilePath>
+            </File>
+            <File>
+              <FileName>netconf.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\lwip-1.4.1\netconf.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -583,6 +588,46 @@
               <FileName>tcpip.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\lwip-1.4.1\src\api\tcpip.c</FilePath>
+            </File>
+            <File>
+              <FileName>sockets.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\lwip-1.4.1\src\api\sockets.c</FilePath>
+            </File>
+            <File>
+              <FileName>raw.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\lwip-1.4.1\src\core\raw.c</FilePath>
+            </File>
+            <File>
+              <FileName>api_msg.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\lwip-1.4.1\src\api\api_msg.c</FilePath>
+            </File>
+            <File>
+              <FileName>api_lib.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\lwip-1.4.1\src\api\api_lib.c</FilePath>
+            </File>
+            <File>
+              <FileName>err.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\lwip-1.4.1\src\api\err.c</FilePath>
+            </File>
+            <File>
+              <FileName>netbuf.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\lwip-1.4.1\src\api\netbuf.c</FilePath>
+            </File>
+            <File>
+              <FileName>netdb.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\lwip-1.4.1\src\api\netdb.c</FilePath>
+            </File>
+            <File>
+              <FileName>netifapi.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\lwip-1.4.1\src\api\netifapi.c</FilePath>
             </File>
           </Files>
         </Group>
