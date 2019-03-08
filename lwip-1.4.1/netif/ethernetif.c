@@ -136,7 +136,7 @@ low_level_init0(struct netif *netif)
   }
   
   xTaskCreate(ethernetif_input_new, "Eth_if", 512, NULL,
-              configMAX_PRIORITIES - 2,NULL);
+              configMAX_PRIORITIES - 1,NULL);
     ETH0_init(netif->hwaddr);
 }
 
@@ -420,16 +420,6 @@ ethernetif_input_new( void * pvParameters )
                 {
                     len = status & 0xFFFF;
                     ethernetif_input0(len, cur_rx_desc_ptr->buf);
-//                    p = low_level_input(NULL, len, cur_rx_desc_ptr->buf);
-//                    sysprintf("r%d\n", len);
-//                    if (p != NULL)
-//                    {
-//                        ret = _netif0->input( p, _netif0);
-//                        if (ERR_OK != ret)
-//                        {
-//                            pbuf_free(p);
-//                        }
-//                    }
                 }
                 cur_rx_desc_ptr->status1 = OWNERSHIP_EMAC;
                 cur_rx_desc_ptr = cur_rx_desc_ptr->next;

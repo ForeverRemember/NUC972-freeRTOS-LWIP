@@ -426,5 +426,5 @@
 #define DEFAULT_TCP_RECVMBOX_SIZE       256
 #define DEFAULT_ACCEPTMBOX_SIZE         128
 #define DEFAULT_THREAD_STACKSIZE        256
-#define TCPIP_THREAD_PRIO               (configMAX_PRIORITIES - 2)
+#define TCPIP_THREAD_PRIO               (configMAX_PRIORITIES - 1)
 #endif /* __LWIPOPTS_H__ */

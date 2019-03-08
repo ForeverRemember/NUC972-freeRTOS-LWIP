@@ -724,7 +724,7 @@ netconn_drain(struct netconn *conn)
       /* drain recvmbox */
       netconn_drain(newconn);
       if (newconn->pcb.tcp != NULL) {
-          printf("-->f\n");
+//          printf("-->f\n");
         tcp_abort(newconn->pcb.tcp);
         newconn->pcb.tcp = NULL;
       }

@@ -617,7 +617,7 @@ lwip_recvfrom(int s, void *mem, size_t len, int flags,
           s, lwip_strerr(err)));
         sock_set_errno(sock, err_to_errno(err));
         if (err == ERR_CLSD) {
-            printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
+//            printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
           return 0;
         } else {
           return -1;
